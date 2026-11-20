@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+    <!-- GitHub Pages 相容版：單一獨立 HTML 檔案，無需後端伺服器或本地外部資源 -->
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="保良局田家炳小學 - 五位數寶箱解密數學互動遊戲">
     <title>保良局田家炳小學 - 寶箱解密遊戲</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 圖標庫 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
@@ -16,7 +21,7 @@
             background-size: 20px 20px;
         }
 
-        /* 鎖頭動畫 */
+        /* 鎖頭解鎖動畫 */
         @keyframes unlock {
             0% { transform: scale(1); }
             50% { transform: scale(1.2) translateY(-10px); color: #fbbf24; }
@@ -46,6 +51,7 @@
             border: 1px solid #7f1d1d;
         }
 
+        /* 寶箱背景樣式 */
         .chest-bg {
             background: linear-gradient(135deg, #78350f 0%, #451a03 100%);
             border: 8px solid #b45309;
@@ -55,6 +61,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
+    <!-- 頂部學校標題列 -->
     <header class="bg-green-700 text-white p-4 shadow-md text-center">
         <h1 class="text-2xl md:text-3xl font-black tracking-wider">🏫 保良局田家炳小學</h1>
         <p class="text-green-200 mt-1">數學挑戰：五位數寶箱解密</p>
@@ -69,7 +76,11 @@
             <div class="space-y-5">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">學生姓名：</label>
-                    <input type="text" id="studentName" placeholder="請輸入姓名" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:outline-none text-lg transition-colors">
+                    <input type="text" id="studentName" placeholder="請輸入姓名" oninput="clearNameError()" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:outline-none text-lg transition-colors">
+                    <!-- 內嵌錯誤提示訊息（取代原生 alert） -->
+                    <p id="nameErrorMsg" class="hidden text-red-600 text-sm font-bold mt-1.5 flex items-center">
+                        <i class="fa-solid fa-circle-exclamation mr-1.5"></i> 請先輸入學生姓名！
+                    </p>
                 </div>
 
                 <div>
@@ -110,7 +121,7 @@
         <!-- 遊戲畫面 (Game Screen) -->
         <div id="gameScreen" class="hidden w-full max-w-4xl flex flex-col gap-6">
             
-            <!-- 資訊列 -->
+            <!-- 玩家與計時資訊列 -->
             <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                 <div class="text-lg font-bold text-gray-700">
                     <i class="fa-solid fa-user-graduate text-green-600 mr-2"></i><span id="displayPlayerName"></span>
@@ -120,22 +131,22 @@
                 </div>
             </div>
 
-            <!-- 寶箱區 -->
+            <!-- 寶箱主視覺區 -->
             <div class="chest-bg rounded-3xl p-6 md:p-10 relative overflow-hidden text-white flex flex-col items-center">
-                <!-- 鎖頭進度 -->
+                <!-- 三個鎖頭進度 -->
                 <div class="flex justify-center gap-6 md:gap-12 mb-8" id="locksContainer">
                     <div class="text-5xl md:text-6xl text-gray-400 drop-shadow-md transition-all" id="lock-0"><i class="fa-solid fa-lock"></i></div>
                     <div class="text-5xl md:text-6xl text-gray-400 drop-shadow-md transition-all" id="lock-1"><i class="fa-solid fa-lock"></i></div>
                     <div class="text-5xl md:text-6xl text-gray-400 drop-shadow-md transition-all" id="lock-2"><i class="fa-solid fa-lock"></i></div>
                 </div>
 
-                <!-- 題目 -->
+                <!-- 題目顯示框 -->
                 <div class="bg-white/90 text-gray-900 px-8 py-4 rounded-2xl shadow-lg mb-8 text-center w-full max-w-2xl border-4 border-yellow-500">
                     <p class="text-gray-500 font-bold mb-1">請依照讀法輸入數字：</p>
                     <h3 id="questionText" class="text-2xl md:text-4xl font-black text-green-800 tracking-wide">三萬零六百三十一</h3>
                 </div>
 
-                <!-- 顯示數字切換(算柱版專用) -->
+                <!-- 顯示數字切換 (算柱版專用) -->
                 <div id="abacusToggleArea" class="hidden absolute top-4 right-4">
                     <label class="flex items-center cursor-pointer bg-black/30 px-3 py-1.5 rounded-full hover:bg-black/40 transition">
                         <div class="relative">
@@ -147,12 +158,12 @@
                     </label>
                 </div>
 
-                <!-- 輸入區容器 -->
+                <!-- 數字方格 / 算柱輸入區容器 -->
                 <div id="inputContainer" class="flex justify-center gap-3 md:gap-6 mb-6 w-full overflow-x-auto pb-4">
                     <!-- 動態由 JS 產生 -->
                 </div>
 
-                <!-- 提交按鈕 -->
+                <!-- 提交解鎖按鈕 -->
                 <button onclick="checkAnswer()" class="mt-4 bg-gradient-to-b from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 text-yellow-900 border-2 border-yellow-200 font-black py-3 px-12 rounded-full shadow-[0_4px_0_#92400e] active:shadow-[0_0px_0_#92400e] active:translate-y-1 transition-all text-xl md:text-2xl tracking-widest">
                     解鎖 !
                 </button>
@@ -177,6 +188,7 @@
                 </div>
             </div>
 
+            <!-- 錯題記錄區 -->
             <div id="mistakesSection" class="mb-8 text-left bg-red-50 p-6 rounded-2xl border border-red-100 hidden">
                 <h3 class="text-xl font-bold text-red-700 mb-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>錯題記錄與解說</h3>
                 <ul id="mistakesList" class="space-y-3 text-gray-700 text-lg">
@@ -188,7 +200,7 @@
                 <button onclick="downloadCertificate()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg transform transition active:scale-95 text-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-certificate text-2xl text-yellow-300"></i> 下載嘉許狀 (JPG)
                 </button>
-                <button onclick="location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-8 rounded-xl shadow transform transition active:scale-95 text-lg">
+                <button onclick="resetToMenu()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-8 rounded-xl shadow transform transition active:scale-95 text-lg">
                     <i class="fa-solid fa-rotate-right mr-2"></i> 再玩一次
                 </button>
             </div>
@@ -196,7 +208,7 @@
 
     </main>
 
-    <!-- 暫停遮罩層 -->
+    <!-- 答錯暫停 3 秒遮罩層 -->
     <div id="pauseOverlay" class="fixed inset-0 bg-red-900/80 z-50 hidden flex-col items-center justify-center fade-in backdrop-blur-sm">
         <i class="fa-solid fa-circle-xmark text-7xl text-red-400 mb-4 drop-shadow-lg"></i>
         <h2 class="text-5xl font-black text-white drop-shadow-md">答錯了！</h2>
@@ -207,6 +219,7 @@
     <canvas id="certificateCanvas" width="1200" height="848" class="hidden"></canvas>
 
     <script>
+        /* 遊戲核心狀態物件 */
         let gameState = {
             studentName: '',
             difficulty: 5,
@@ -227,7 +240,7 @@
 
         const placeValues = ['百萬位', '十萬位', '萬位', '千位', '百位', '十位', '個位'];
 
-        // --- 萬以內數字轉中文 ---
+        // --- 萬以內數字轉中文讀法 ---
         function convertUnderWan(num) {
             const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
             const units = ['', '十', '百', '千'];
@@ -273,11 +286,22 @@
             }
         }
 
+        // 清除姓名未填提示
+        function clearNameError() {
+            const input = document.getElementById('studentName');
+            const err = document.getElementById('nameErrorMsg');
+            input.classList.remove('border-red-500');
+            err.classList.add('hidden');
+        }
+
         // --- 初始化與開始遊戲 ---
         function startGame() {
-            const nameInput = document.getElementById('studentName').value.trim();
+            const nameInputEl = document.getElementById('studentName');
+            const nameInput = nameInputEl.value.trim();
             if (!nameInput) {
-                alert('請先輸入學生姓名！');
+                nameInputEl.classList.add('border-red-500');
+                document.getElementById('nameErrorMsg').classList.remove('hidden');
+                nameInputEl.focus();
                 return;
             }
 
@@ -291,12 +315,12 @@
             gameState.isPlaying = true;
             gameState.currentInput = Array(gameState.difficulty).fill(0);
             
-            // UI 切換
+            // 切換至遊戲畫面
             document.getElementById('setupScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
             document.getElementById('displayPlayerName').innerText = gameState.studentName;
             
-            // 算柱版顯示數字按鈕
+            // 算柱版顯示數字切換開關
             if (gameState.mode === 'abacus') {
                 document.getElementById('abacusToggleArea').classList.remove('hidden');
             } else {
@@ -309,6 +333,7 @@
             updateLocksUI();
         }
 
+        // --- 120 秒倒計時器 ---
         function startTimer() {
             const timerDisplay = document.getElementById('timerDisplay');
             const timerText = document.getElementById('timerText');
@@ -322,7 +347,7 @@
                 gameState.timeLeft--;
                 timerText.innerText = gameState.timeLeft;
 
-                // 少於10秒變紅色提醒
+                // 少於或等於 10 秒變紅色提醒
                 if (gameState.timeLeft <= 10) {
                     timerDisplay.className = "text-2xl font-black text-red-600 bg-red-100 px-4 py-1 rounded-lg border-2 border-red-500 animate-pulse transition-colors duration-300";
                 }
@@ -333,6 +358,7 @@
             }, 1000);
         }
 
+        // --- 生成隨機題目 ---
         function generateNextQuestion() {
             let min, max;
             if (gameState.difficulty === 3) { min = 100; max = 999; }
@@ -341,7 +367,7 @@
             else if (gameState.difficulty === 6) { min = 100000; max = 999999; }
             else if (gameState.difficulty === 7) { min = 1000000; max = 9999999; }
             
-            // 確保新題目不會跟上一題一樣
+            // 確保新題目不會跟上一題重複
             let newNum;
             do {
                 newNum = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -352,21 +378,22 @@
             
             document.getElementById('questionText').innerText = gameState.currentQuestionChinese;
             
-            // 重置輸入
+            // 重置玩家輸入方格
             gameState.currentInput = Array(gameState.difficulty).fill(0);
             renderInputArea();
         }
 
+        // --- 渲染數字版或算柱版介面 ---
         function renderInputArea() {
             const container = document.getElementById('inputContainer');
             container.innerHTML = '';
             
-            // 取得適當的位值標籤陣列
+            // 取得對應位數的位值標籤陣列
             const activePlaceValues = placeValues.slice(7 - gameState.difficulty);
 
             gameState.currentInput.forEach((val, index) => {
                 if (gameState.mode === 'number') {
-                    // 數字版UI
+                    // 數字版 UI
                     container.innerHTML += `
                         <div class="flex flex-col items-center bg-white p-1.5 md:p-3 rounded-2xl shadow-inner border-2 border-gray-200 min-w-[48px] sm:min-w-[60px] md:min-w-[75px]">
                             <button onclick="adjustDigit(${index}, 1)" class="w-full text-xl md:text-3xl text-gray-400 hover:text-green-600 active:text-green-800 py-1 md:py-2"><i class="fa-solid fa-chevron-up"></i></button>
@@ -375,7 +402,7 @@
                         </div>
                     `;
                 } else {
-                    // 算柱版UI
+                    // 算柱版 UI
                     let beadsHTML = '';
                     for (let i = 0; i < val; i++) {
                         beadsHTML += `<div class="bead"></div>`;
@@ -385,7 +412,7 @@
 
                     container.innerHTML += `
                         <div class="flex flex-col items-center bg-white/20 p-1.5 md:p-3 rounded-xl flex-1 min-w-[45px] max-w-[90px]">
-                            <!-- 顯示數字(視乎開關) -->
+                            <!-- 顯示數字 (視乎開關) -->
                             <div class="h-6 md:h-8 text-lg md:text-xl font-bold text-yellow-300 transition-opacity duration-300 ${numberDisplayClass}">${val}</div>
                             
                             <button onclick="adjustDigit(${index}, 1)" class="w-7 h-7 md:w-10 md:h-10 bg-green-500 hover:bg-green-400 text-white rounded-full font-bold shadow-md active:scale-95 mb-2 text-base md:text-xl">+</button>
@@ -404,13 +431,12 @@
             });
         }
 
-        // 操作數值
+        // 調整單一數位數值 (0-9 循環)
         function adjustDigit(index, amount) {
-            if (!gameState.isPlaying) return; // 暫停時不能點擊
+            if (!gameState.isPlaying) return;
             let current = gameState.currentInput[index];
             current += amount;
             
-            // 循環 0-9
             if (current > 9) current = 0;
             if (current < 0) current = 9;
             
@@ -423,10 +449,9 @@
             const toggle = document.getElementById('showNumbersToggle');
             gameState.showNumbers = toggle.checked;
             
-            // Toggle visual styling for switch
             const dot = document.querySelector('.dot');
             const bg = document.querySelector('.toggle-bg');
-            if(toggle.checked){
+            if (toggle.checked) {
                 dot.style.transform = 'translateX(100%)';
                 bg.classList.replace('bg-gray-500', 'bg-green-500');
             } else {
@@ -437,55 +462,52 @@
             renderInputArea();
         }
 
-        // --- STREAMING_CHUNK:遊戲判定與結果邏輯 ---
+        // --- 遊戲答案判定 ---
         function checkAnswer() {
             if (!gameState.isPlaying) return;
             
-            // 組合數字
             const userAnswer = parseInt(gameState.currentInput.join(''));
             
             if (userAnswer === gameState.currentQuestionNumber) {
-                // 答對
+                // 答對解鎖
                 gameState.locksUnlocked++;
                 updateLocksUI();
                 
                 if (gameState.locksUnlocked >= gameState.targetLocks) {
-                    endGame(true); // 勝利
+                    endGame(true);
                 } else {
                     generateNextQuestion();
                 }
             } else {
-                // 答錯
+                // 答錯處理
                 handleMistake(userAnswer);
             }
         }
 
+        // 更新寶箱鎖頭視覺狀態
         function updateLocksUI() {
             for (let i = 0; i < 3; i++) {
                 const lockIcon = document.getElementById(`lock-${i}`);
                 if (i < gameState.locksUnlocked) {
-                    // 已解鎖樣式
                     if (lockIcon.innerHTML.includes('fa-lock"')) {
                         lockIcon.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
                         lockIcon.className = "text-5xl md:text-6xl text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)] unlocked-anim";
                     }
                 } else {
-                    // 未解鎖樣式
                     lockIcon.innerHTML = '<i class="fa-solid fa-lock"></i>';
                     lockIcon.className = "text-5xl md:text-6xl text-gray-800/80 drop-shadow-md transition-all";
                 }
             }
         }
 
+        // 記錄錯題並暫停 3 秒
         function handleMistake(userAnswer) {
-            // 記錄錯題
             gameState.mistakes.push({
                 question: gameState.currentQuestionChinese,
                 correct: gameState.currentQuestionNumber,
                 wrong: userAnswer
             });
 
-            // 暫停 3 秒
             gameState.isPlaying = false;
             const overlay = document.getElementById('pauseOverlay');
             const countdownEl = document.getElementById('pauseCountdown');
@@ -502,12 +524,12 @@
                     clearInterval(pauseInterval);
                     overlay.classList.add('hidden');
                     overlay.classList.remove('flex');
-                    gameState.isPlaying = true; // 恢復遊戲
+                    gameState.isPlaying = true;
                 }
             }, 1000);
         }
 
-        // --- STREAMING_CHUNK:結束遊戲與證書生成 ---
+        // --- 結束遊戲與結算頁面 ---
         function endGame(isWin) {
             gameState.isPlaying = false;
             clearInterval(gameState.timerInterval);
@@ -537,43 +559,42 @@
             document.getElementById('displayTimeTaken').innerText = timeFormatted;
             document.getElementById('displayFinalScore').innerText = `${gameState.score} 分`;
 
-            // 顯示錯題
-            if (gameState.mistakes.length > 0) {
-                const mistakesSection = document.getElementById('mistakesSection');
-                const mistakesList = document.getElementById('mistakesList');
-                mistakesSection.classList.remove('hidden');
-                mistakesList.innerHTML = '';
-                
-                gameState.mistakes.forEach((m, idx) => {
-                    mistakesList.innerHTML += `
-                        <li class="bg-white p-3 rounded-lg shadow-sm border border-red-100 flex flex-col md:flex-row md:items-center justify-between">
-                            <div><span class="font-bold text-gray-600">題目 ${idx+1}：</span> <span class="text-blue-700 font-bold">${m.question}</span></div>
-                            <div class="mt-2 md:mt-0 text-sm md:text-base">
-                                <span class="text-red-500 line-through mr-2">你的答案：${m.wrong}</span> 
-                                <span class="text-green-600 font-bold border-b-2 border-green-600">正確數字：${m.correct}</span>
-                            </div>
-                        </li>
-                    `;
-                });
-            }
+            // 顯示錯題與解說
+        // --- 返回主選單並重置狀態（避免依賴網頁重新整理，完全相容 GitHub Pages 子路徑） ---
+        function resetToMenu() {
+            clearInterval(gameState.timerInterval);
+            gameState.isPlaying = false;
+            gameState.locksUnlocked = 0;
+            gameState.timeLeft = 120;
+            gameState.timeTaken = 0;
+            gameState.mistakes = [];
+            gameState.score = 0;
+
+            document.getElementById('timerText').innerText = '120';
+            document.getElementById('mistakesSection').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
         }
 
-        // 生成並下載嘉許狀 JPG
-        function downloadCertificate() {
+        // --- 生成並下載嘉許狀 JPG（等待雲端字體就緒以確保 GitHub Pages 渲染清晰） ---
+        async function downloadCertificate() {
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
             const canvas = document.getElementById('certificateCanvas');
             const ctx = canvas.getContext('2d');
             
-            // 繪製背景
             // 淺黃色背景
             ctx.fillStyle = "#FFFDE7";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 裝飾花紋背景(點陣)
+            // 裝飾點陣花紋
             ctx.fillStyle = "rgba(251, 192, 45, 0.1)";
-            for(let i=0; i<canvas.width; i+=40) {
-                for(let j=0; j<canvas.height; j+=40) {
+            for (let i = 0; i < canvas.width; i += 40) {
+                for (let j = 0; j < canvas.height; j += 40) {
                     ctx.beginPath();
-                    ctx.arc(i, j, 4, 0, Math.PI*2);
+                    ctx.arc(i, j, 4, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -587,7 +608,7 @@
             ctx.strokeStyle = "#F57F17";
             ctx.strokeRect(45, 45, canvas.width - 90, canvas.height - 90);
 
-            // 設置文字通用屬性
+            // 文字對齊設置
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             
@@ -603,13 +624,13 @@
             
             // 分隔線
             ctx.beginPath();
-            ctx.moveTo(canvas.width/2 - 200, 320);
-            ctx.lineTo(canvas.width/2 + 200, 320);
+            ctx.moveTo(canvas.width / 2 - 200, 320);
+            ctx.lineTo(canvas.width / 2 + 200, 320);
             ctx.lineWidth = 4;
             ctx.strokeStyle = "#FBC02D";
             ctx.stroke();
 
-            // 內文 - 根據使用者要求完全使用提供的文字格式
+            // 嘉許狀內文
             ctx.fillStyle = "#333333";
             ctx.font = "bold 40px 'Noto Sans TC', sans-serif";
             ctx.fillText(`頒發給：${gameState.studentName}`, canvas.width / 2, 420);
@@ -618,17 +639,16 @@
             ctx.fillText("在乘法的任務中，你展現了勇氣，", canvas.width / 2, 520);
             ctx.fillText(`成功得到 ${gameState.score} 分！`, canvas.width / 2, 590);
             
-            // 日期生成 (YYYY年MM月DD日)
+            // 系統生成日期
             const today = new Date();
             const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
             
             ctx.fillStyle = "#555555";
             ctx.font = "bold 30px 'Noto Sans TC', sans-serif";
-            // 放右下角
             ctx.textAlign = "right";
             ctx.fillText(`日期：${dateStr}`, canvas.width - 120, canvas.height - 120);
 
-            // 輸出圖片
+            // 匯出 JPG 下載
             const dataURL = canvas.toDataURL('image/jpeg', 0.9);
             const link = document.createElement('a');
             link.download = `嘉許狀_${gameState.studentName}.jpg`;
